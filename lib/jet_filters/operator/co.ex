@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Co do
+defmodule JetFilters.Operator.CO do
   @moduledoc false
 
   use JetFilters.Operator, [

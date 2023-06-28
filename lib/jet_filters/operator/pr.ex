@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Pr do
+defmodule JetFilters.Operator.PV do
   @moduledoc false
 
   use JetFilters.Operator, [

@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Sw do
+defmodule JetFilters.Operator.SW do
   @moduledoc false
 
   use JetFilters.Operator, [:string, :string]
@@ -8,7 +8,7 @@ defmodule JetFilters.Operator.Sw do
   end
 end
 
-defmodule JetFilters.Operator.Ew do
+defmodule JetFilters.Operator.EW do
   @moduledoc false
 
   use JetFilters.Operator, [:string, :string]

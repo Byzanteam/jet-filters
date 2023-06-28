@@ -45,6 +45,8 @@ defmodule JetFilters.SQL do
     end
   end
 
+  defp do_to_dynamic(_ast, _field_types), do: :error
+
   defp normalize_operands(operands) do
     operands
     |> Enum.reduce_while({:ok, []}, fn

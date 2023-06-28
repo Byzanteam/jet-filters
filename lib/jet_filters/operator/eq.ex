@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Eq do
+defmodule JetFilters.Operator.EQ do
   @moduledoc false
 
   use JetFilters.Operator, [{:_var, 0}, {:_var, 0}]

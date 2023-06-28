@@ -61,17 +61,17 @@ defmodule JetFilters.Operator do
   end
 
   @operator_modules %{
-    "co" => JetFilters.Operator.Co,
-    "eq" => JetFilters.Operator.Eq,
-    "ew" => JetFilters.Operator.Ew,
-    "gt" => JetFilters.Operator.Gt,
-    "gte" => JetFilters.Operator.Gte,
+    "co" => JetFilters.Operator.CO,
+    "eq" => JetFilters.Operator.EQ,
+    "ew" => JetFilters.Operator.EW,
+    "gt" => JetFilters.Operator.GT,
+    "gte" => JetFilters.Operator.GTE,
     "is_null" => JetFilters.Operator.IsNull,
-    "lt" => JetFilters.Operator.Lt,
-    "lte" => JetFilters.Operator.Lte,
-    "ov" => JetFilters.Operator.Ov,
-    "pr" => JetFilters.Operator.Pr,
-    "sw" => JetFilters.Operator.Sw
+    "lt" => JetFilters.Operator.LT,
+    "lte" => JetFilters.Operator.LTE,
+    "ov" => JetFilters.Operator.OV,
+    "pr" => JetFilters.Operator.PR,
+    "sw" => JetFilters.Operator.SW
   }
 
   @spec resolve_operator_module(String.t()) :: {:ok, module()} | :error

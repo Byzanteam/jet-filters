@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Gt do
+defmodule JetFilters.Operator.GT do
   @moduledoc false
 
   use JetFilters.Operator, [
@@ -12,7 +12,7 @@ defmodule JetFilters.Operator.Gt do
   end
 end
 
-defmodule JetFilters.Operator.Gte do
+defmodule JetFilters.Operator.GTE do
   @moduledoc false
 
   use JetFilters.Operator, [
@@ -26,7 +26,7 @@ defmodule JetFilters.Operator.Gte do
   end
 end
 
-defmodule JetFilters.Operator.Lt do
+defmodule JetFilters.Operator.LT do
   @moduledoc false
 
   use JetFilters.Operator, [
@@ -40,7 +40,7 @@ defmodule JetFilters.Operator.Lt do
   end
 end
 
-defmodule JetFilters.Operator.Lte do
+defmodule JetFilters.Operator.LTE do
   @moduledoc false
 
   use JetFilters.Operator, [

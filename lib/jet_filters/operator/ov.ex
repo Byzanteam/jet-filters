@@ -1,4 +1,4 @@
-defmodule JetFilters.Operator.Ov do
+defmodule JetFilters.Operator.OV do
   @moduledoc false
 
   use JetFilters.Operator, [{:array, {:_var, 0}}, {:array, {:_var, 0}}]
