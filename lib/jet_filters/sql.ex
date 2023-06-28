@@ -1,0 +1,68 @@
+defmodule JetFilters.SQL do
+  @moduledoc false
+
+  import Ecto.Query
+
+  @spec to_dynamic(
+          JetFilters.Exp.Parser.ast(),
+          field_types :: %{(field :: String.t()) => JetFilters.Type.value_type()}
+        ) :: {:ok, Ecto.Query.dynamic_expr()} | :error
+  def to_dynamic(ast, field_types) do
+    do_to_dynamic(ast, field_types)
+  end
+
+  defp do_to_dynamic({{:id, operator}, _line, operands}, field_types) do
+    with(
+      {:ok, module} <- JetFilters.Operator.resolve_operator_module(operator),
+      {:ok, operands} <- normalize_operands(operands),
+      {:ok, operand_type} <- module.determine_operand_types(operands, field_types)
+    ) do
+      {:ok, module.to_dynamic(operands, operand_type)}
+    end
+  end
+
+  defp do_to_dynamic({:and, _line, asts}, field_types) do
+    Enum.reduce_while(asts, {:ok, false}, fn ast, {:ok, acc} ->
+      case to_dynamic(ast, field_types) do
+        {:ok, d} -> {:cont, {:ok, dynamic(^acc and ^d)}}
+        :error -> {:halt, :error}
+      end
+    end)
+  end
+
+  defp do_to_dynamic({:or, _line, asts}, field_types) do
+    Enum.reduce_while(asts, {:ok, true}, fn ast, {:ok, acc} ->
+      case to_dynamic(ast, field_types) do
+        {:ok, d} -> {:cont, {:ok, dynamic(^acc or ^d)}}
+        :error -> {:halt, :error}
+      end
+    end)
+  end
+
+  defp do_to_dynamic({:not, _linne, [ast]}, field_types) do
+    with({:ok, d} <- to_dynamic(ast, field_types)) do
+      {:ok, dynamic(not (^d))}
+    end
+  end
+
+  defp normalize_operands(operands) do
+    operands
+    |> Enum.reduce_while({:ok, []}, fn
+      {:id, _line, id}, acc ->
+        {:cont, {:ok, [String.to_atom(id) | acc]}}
+
+      {:"::", _line, annotation}, acc ->
+        case JetFilters.Type.expand_annotation(annotation) do
+          {:ok, value} -> {:cont, {:ok, [value | acc]}}
+          :error -> {:halt, :error}
+        end
+
+      literal, acc ->
+        {:cont, {:ok, [literal | acc]}}
+    end)
+    |> case do
+      {:ok, operands} -> {:ok, Enum.reverse(operands)}
+      :error -> :error
+    end
+  end
+end
