@@ -18,25 +18,50 @@ defmodule JetFilters.Operator do
       import Ecto.Query
       import unquote(__MODULE__), only: [build_to_dynamic: 2]
 
-      @type value() :: String.t() | number() | boolean() | DateTime.t() | [String.t()] | [value()]
-      @type field() :: atom()
+      @type value() :: unquote(__MODULE__).value()
+      @type field() :: unquote(__MODULE__).field()
 
       @spec determine_operand_types(operands :: [value() | field()],
               field_types: %{field() => JetFilters.Type.value_type()}
             ) :: {:ok, [JetFilters.Type.value_type()]} | :error
       def determine_operand_types(operands, field_types) do
-        operand_type =
-          Enum.map(operands, fn
-            field when is_atom(field) -> Map.fetch!(field_types, field)
-            value -> JetFilters.Type.typeof(value)
-          end)
-
-        match_type(operand_type)
+        with(
+          {:ok, operand_type} <- unquote(__MODULE__).build_operand_type(operands, field_types)
+        ) do
+          match_type(operand_type)
+        end
       end
 
       unquote(type_matchers)
 
       defp match_type(_operand_type), do: :error
+    end
+  end
+
+  @type value() :: String.t() | number() | boolean() | DateTime.t() | [String.t()] | [value()]
+  @type field() :: atom()
+
+  @spec build_operand_type(operands :: [value() | field()],
+          field_types: %{field() => JetFilters.Type.value_type()}
+        ) :: {:ok, [JetFilters.Type.value_type()]} | :error
+  def build_operand_type(operands, field_types) do
+    operands
+    |> Enum.reduce_while({:ok, []}, fn
+      field, {:ok, acc} when is_atom(field) ->
+        case Map.fetch(field_types, field) do
+          {:ok, type} -> {:cont, {:ok, [type | acc]}}
+          :error -> {:halt, :error}
+        end
+
+      value, {:ok, acc} ->
+        {:cont, {:ok, [JetFilters.Type.typeof(value) | acc]}}
+    end)
+    |> case do
+      {:ok, operand_type} ->
+        {:ok, Enum.reverse(operand_type)}
+
+      :error ->
+        :error
     end
   end
 

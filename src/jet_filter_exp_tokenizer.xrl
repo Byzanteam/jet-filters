@@ -5,7 +5,7 @@ ID = [a-zA-Z][0-9a-zA-Z_']*?
 INT = [0-9]+
 FLOAT = [0-9]+\.[0-9]+
 
-STRING = \'(\\.|[^"\\])*\'
+STRING = \"(\\.|[^"\\])*\"
 
 WHITESPACE = [\s\t\n\r]
 
@@ -42,9 +42,9 @@ build_string(TokenChars) ->
   Binary = unicode:characters_to_binary(TokenChars),
   trim_string(Binary).
 
-trim_string(<<"'", BinTail/binary>>) -> trim_string_tail(BinTail).
+trim_string(<<"\"", BinTail/binary>>) -> trim_string_tail(BinTail).
 
-trim_string_tail(<<"'">>) -> <<>>;
+trim_string_tail(<<"\"">>) -> <<>>;
 trim_string_tail(<<C, BinTail/binary>>) ->
   NewBinTail = trim_string_tail(BinTail),
   <<C, NewBinTail/binary>>.
