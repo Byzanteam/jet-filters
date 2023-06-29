@@ -21,22 +21,26 @@ defmodule JetFilters.SQL do
     end
   end
 
-  defp do_to_dynamic({:and, _line, asts}, field_types) do
-    Enum.reduce_while(asts, {:ok, false}, fn ast, {:ok, acc} ->
-      case to_dynamic(ast, field_types) do
-        {:ok, d} -> {:cont, {:ok, dynamic(^acc and ^d)}}
-        :error -> {:halt, :error}
-      end
-    end)
+  defp do_to_dynamic({:and, _line, [ast | asts]}, field_types) do
+    with({:ok, d} <- to_dynamic(ast, field_types)) do
+      Enum.reduce_while(asts, {:ok, d}, fn ast, {:ok, acc} ->
+        case to_dynamic(ast, field_types) do
+          {:ok, d} -> {:cont, {:ok, dynamic(^acc and ^d)}}
+          :error -> {:halt, :error}
+        end
+      end)
+    end
   end
 
-  defp do_to_dynamic({:or, _line, asts}, field_types) do
-    Enum.reduce_while(asts, {:ok, true}, fn ast, {:ok, acc} ->
-      case to_dynamic(ast, field_types) do
-        {:ok, d} -> {:cont, {:ok, dynamic(^acc or ^d)}}
-        :error -> {:halt, :error}
-      end
-    end)
+  defp do_to_dynamic({:or, _line, [ast | asts]}, field_types) do
+    with({:ok, d} <- to_dynamic(ast, field_types)) do
+      Enum.reduce_while(asts, {:ok, d}, fn ast, {:ok, acc} ->
+        case to_dynamic(ast, field_types) do
+          {:ok, d} -> {:cont, {:ok, dynamic(^acc or ^d)}}
+          :error -> {:halt, :error}
+        end
+      end)
+    end
   end
 
   defp do_to_dynamic({:not, _linne, [ast]}, field_types) do
