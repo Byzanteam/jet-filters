@@ -1,5 +1,9 @@
 defmodule JetFilters.Operator.PR do
-  @moduledoc false
+  @moduledoc """
+  有值（present）：
+  - 用于 `string` 时，表示字符串不是空串（`""`）
+  - 用于 `array` 时，表示数组非空（一个只包含 0 ～ N 个 NULL 的数组是空数组）
+  """
 
   use JetFilters.Operator, [
     [{:array, {:_var, 0}}],

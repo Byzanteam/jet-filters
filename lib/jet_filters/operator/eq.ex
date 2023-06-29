@@ -3,7 +3,7 @@ defmodule JetFilters.Operator.EQ do
 
   use JetFilters.Operator, [{:_var, 0}, {:_var, 0}]
 
-  build_to_dynamic([_type1, _type2]) do
+  build_to_dynamic([type, type]) do
     dynamic(^op1 == ^op2)
   end
 end

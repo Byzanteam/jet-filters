@@ -9,17 +9,40 @@ defmodule JetFilters.Operator do
         [operand_types]
       end
 
+    type_matchers =
+      operand_types
+      |> Enum.flat_map(&JetFilters.Type.expand_type/1)
+      |> Enum.map(&type_matcher/1)
+
     quote location: :keep do
       import Ecto.Query
       import unquote(__MODULE__), only: [build_to_dynamic: 2]
 
+      @type value() :: String.t() | number() | boolean() | DateTime.t() | [String.t()] | [value()]
+      @type field() :: atom()
+
+      @spec determine_operand_types(operands :: [value() | field()],
+              field_types: %{field() => JetFilters.Type.value_type()}
+            ) :: {:ok, [JetFilters.Type.value_type()]} | :error
       def determine_operand_types(operands, field_types) do
-        unquote(__MODULE__).determine_operand_types(
-          unquote(operand_types),
-          operands,
-          field_types
-        )
+        operand_type =
+          Enum.map(operands, fn
+            field when is_atom(field) -> Map.fetch!(field_types, field)
+            value -> JetFilters.Type.typeof(value)
+          end)
+
+        match_type(operand_type)
       end
+
+      unquote(type_matchers)
+
+      defp match_type(_operand_type), do: :error
+    end
+  end
+
+  defp type_matcher(operand_type) do
+    quote location: :keep, generated: true do
+      defp match_type(unquote(operand_type)), do: {:ok, unquote(operand_type)}
     end
   end
 
@@ -77,71 +100,5 @@ defmodule JetFilters.Operator do
   @spec resolve_operator_module(String.t()) :: {:ok, module()} | :error
   def resolve_operator_module(operator) do
     Map.fetch(@operator_modules, operator)
-  end
-
-  @type operand_type() ::
-          JetFilters.Type.value_type()
-          | {:_var, non_neg_integer()}
-          | {:array, {:_var, non_neg_integer()}}
-  @type value() :: String.t() | number() | boolean() | DateTime.t() | [String.t()] | [value()]
-  @type field() :: atom()
-
-  @spec determine_operand_types(
-          valid_operand_types :: [[operand_type()]],
-          operands :: [value() | field()],
-          field_types :: %{field() => JetFilters.Type.value_type()}
-        ) :: {:ok, [JetFilters.Type.value_type()]} | :error
-  def determine_operand_types(valid_operand_types, operands, field_types) do
-    Enum.find_value(valid_operand_types, :error, &match_type(&1, operands, field_types))
-  end
-
-  defp match_type(valid_operand_type, operands, field_types) do
-    operand_type =
-      Enum.map(operands, fn
-        field when is_atom(field) -> Map.fetch!(field_types, field)
-        value -> JetFilters.Type.typeof(value)
-      end)
-
-    with([_ | _] = operand_type <- do_match_type(valid_operand_type, operand_type)) do
-      {:ok, operand_type}
-    end
-  end
-
-  defp do_match_type(valid_operand_type, operand_type)
-       when length(valid_operand_type) === length(operand_type) do
-    valid_operand_type
-    |> Enum.zip(operand_type)
-    |> Enum.reduce_while(%{}, fn {expected_type, actual_type}, var_registry ->
-      case type_match?(expected_type, actual_type, var_registry) do
-        {:ok, var_registry} -> {:cont, var_registry}
-        :error -> {:halt, false}
-      end
-    end)
-    |> case do
-      false -> false
-      _otherwise -> operand_type
-    end
-  end
-
-  defp do_match_type(_valid_operand_type, _operand_type), do: false
-
-  defp type_match?({:_var, id}, actual_type, var_registry) do
-    case Map.get(var_registry, id) do
-      ^actual_type -> {:ok, var_registry}
-      nil -> {:ok, Map.put(var_registry, id, actual_type)}
-      _otherwise -> :error
-    end
-  end
-
-  defp type_match?({:array, {:_var, id}}, {:array, actual_type}, var_registry) do
-    type_match?({:_var, id}, actual_type, var_registry)
-  end
-
-  defp type_match?(expected_type, actual_type, var_registry) do
-    if expected_type === actual_type do
-      {:ok, var_registry}
-    else
-      :error
-    end
   end
 end

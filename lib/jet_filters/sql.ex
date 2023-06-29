@@ -50,16 +50,16 @@ defmodule JetFilters.SQL do
   defp normalize_operands(operands) do
     operands
     |> Enum.reduce_while({:ok, []}, fn
-      {:id, _line, id}, acc ->
+      {:id, _line, id}, {:ok, acc} ->
         {:cont, {:ok, [String.to_atom(id) | acc]}}
 
-      {:"::", _line, annotation}, acc ->
+      {:"::", _line, annotation}, {:ok, acc} ->
         case JetFilters.Type.expand_annotation(annotation) do
           {:ok, value} -> {:cont, {:ok, [value | acc]}}
           :error -> {:halt, :error}
         end
 
-      literal, acc ->
+      literal, {:ok, acc} ->
         {:cont, {:ok, [literal | acc]}}
     end)
     |> case do

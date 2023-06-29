@@ -7,7 +7,7 @@ defmodule JetFilters.Operator.GT do
     [:datetime, :datetime]
   ]
 
-  build_to_dynamic([_type1, _type2]) do
+  build_to_dynamic([type, type]) do
     dynamic(^op1 > ^op2)
   end
 end
@@ -21,7 +21,7 @@ defmodule JetFilters.Operator.GTE do
     [:datetime, :datetime]
   ]
 
-  build_to_dynamic([_type1, _type2]) do
+  build_to_dynamic([type, type]) do
     dynamic(^op1 >= ^op2)
   end
 end
@@ -35,7 +35,7 @@ defmodule JetFilters.Operator.LT do
     [:datetime, :datetime]
   ]
 
-  build_to_dynamic([_type1, _type2]) do
+  build_to_dynamic([type, type]) do
     dynamic(^op1 < ^op2)
   end
 end
@@ -49,7 +49,7 @@ defmodule JetFilters.Operator.LTE do
     [:datetime, :datetime]
   ]
 
-  build_to_dynamic([_type1, _type2]) do
+  build_to_dynamic([type, type]) do
     dynamic(^op1 <= ^op2)
   end
 end
