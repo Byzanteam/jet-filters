@@ -13,6 +13,7 @@ defmodule JetFilter.Exp.Parser do
 
   @spec parse(String.t()) ::
           {:ok, ast()} | {:error, term()} | {:error, error_info :: term(), line()}
+  # credo:disable-for-previous-line JetCredo.Checks.ExplicitAnyType
   def parse(code) do
     with({:ok, tokens, _line} <- code |> to_charlist() |> :jet_filter_exp_tokenizer.string()) do
       :jet_filter_exp_parser.parse(tokens)
