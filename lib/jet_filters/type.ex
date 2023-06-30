@@ -13,14 +13,29 @@ defmodule JetFilters.Type do
   def typeof(value) when is_boolean(value), do: {:ok, :boolean}
   def typeof(value) when is_struct(value, DateTime), do: {:ok, :datetime}
 
-  def typeof([value | _tail]) when not is_list(value) do
+  def typeof([]), do: {:ok, :array}
+
+  def typeof([[]]), do: {:ok, {:array, {:array, :string}}}
+
+  def typeof([value | values]) when not is_list(value) do
     with({:ok, type} <- typeof(value)) do
-      {:ok, {:array, type}}
+      Enum.reduce_while(values, {:ok, {:array, type}}, fn v, acc ->
+        case typeof(v) do
+          {:ok, ^type} -> {:cont, acc}
+          _otherwise -> {:halt, :error}
+        end
+      end)
     end
   end
 
-  def typeof([[value | _tail1] | _tail2]) when is_binary(value) do
-    {:ok, {:array, {:array, :string}}}
+  def typeof([[value | values] | tail]) when is_binary(value) do
+    is_values_valid = fn values -> Enum.all?(values, &is_binary/1) end
+
+    if is_values_valid.(values) and Enum.all?(tail, is_values_valid) do
+      {:ok, {:array, {:array, :string}}}
+    else
+      :error
+    end
   end
 
   def typeof(_value), do: :error

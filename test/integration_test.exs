@@ -34,6 +34,9 @@ defmodule JetFilters.IntegrationTest do
 
     assert {:ok, ast} = Parser.parse(~s{co([["a", "b"]], [["x", "y"]])})
     assert {:ok, _dynamic} = SQL.to_dynamic(ast, field_types)
+
+    assert {:ok, ast} = Parser.parse(~s{co(tags, [])})
+    assert {:ok, _dynamic} = SQL.to_dynamic(ast, field_types)
   end
 
   test "fails", %{field_types: field_types} do
@@ -46,6 +49,9 @@ defmodule JetFilters.IntegrationTest do
     assert :error === SQL.to_dynamic(ast, field_types)
 
     assert {:ok, ast} = Parser.parse("co([[1, 2]], [[2, 3]])")
+    assert :error === SQL.to_dynamic(ast, field_types)
+
+    assert {:ok, ast} = Parser.parse(~s{co(tags, ["foo", 1])})
     assert :error === SQL.to_dynamic(ast, field_types)
   end
 end

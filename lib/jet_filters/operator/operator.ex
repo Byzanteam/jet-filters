@@ -12,6 +12,7 @@ defmodule JetFilters.Operator do
     type_matchers =
       operand_types
       |> Enum.flat_map(&JetFilters.Type.expand_type/1)
+      |> attach_empty_array_types()
       |> Enum.map(&type_matcher/1)
 
     quote location: :keep do
@@ -66,6 +67,28 @@ defmodule JetFilters.Operator do
       :error ->
         :error
     end
+  end
+
+  defp attach_empty_array_types(operand_types) do
+    build_empty_array_types(operand_types) ++ operand_types
+  end
+
+  defp build_empty_array_types(operand_types) do
+    operand_types
+    |> Enum.flat_map(&do_build_empty_array_types/1)
+    |> Enum.uniq()
+  end
+
+  defp do_build_empty_array_types(tail, heads \\ [])
+
+  defp do_build_empty_array_types([], _head), do: []
+
+  defp do_build_empty_array_types([{:array, _type} = type | tail], heads) do
+    [heads ++ [:array] ++ tail | do_build_empty_array_types(tail, heads ++ [type])]
+  end
+
+  defp do_build_empty_array_types([head | tail], heads) do
+    do_build_empty_array_types(tail, heads ++ [head])
   end
 
   defp type_matcher(operand_type) do

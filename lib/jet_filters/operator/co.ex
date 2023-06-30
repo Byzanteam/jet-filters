@@ -14,7 +14,7 @@ defmodule JetFilters.Operator.CO do
     dynamic(fragment("? LIKE '%' || ? || '%'", ^op1, ^op2))
   end
 
-  build_to_dynamic([{:array, type}, {:array, type}]) do
+  build_to_dynamic([_, _]) do
     dynamic(fragment("? @> ?", ^op1, ^op2))
   end
 end
