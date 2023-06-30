@@ -54,7 +54,10 @@ defmodule JetFilters.Operator do
         end
 
       value, {:ok, acc} ->
-        {:cont, {:ok, [JetFilters.Type.typeof(value) | acc]}}
+        case JetFilters.Type.typeof(value) do
+          {:ok, type} -> {:cont, {:ok, [type | acc]}}
+          :error -> {:halt, :error}
+        end
     end)
     |> case do
       {:ok, operand_type} ->

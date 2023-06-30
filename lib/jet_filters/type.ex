@@ -1,20 +1,29 @@
 defmodule JetFilters.Type do
   @moduledoc false
 
-  @type value_type() ::
-          :string | :number | :boolean | :datetime | {:array, :string} | {:array, value_type()}
+  @type basic_value_type() :: :string | :number | :boolean | :datetime | {:array, :string}
+  @type value_type() :: basic_value_type() | {:array, basic_value_type()}
 
-  @spec typeof(term()) :: value_type()
-  def typeof(value) when is_binary(value), do: :string
-  def typeof(value) when is_number(value), do: :number
-  def typeof(value) when is_boolean(value), do: :boolean
-  def typeof(value) when is_struct(value, DateTime), do: :datetime
+  @basic_value_types [:string, :number, :boolean, :datetime, {:array, :string}]
+  @value_types @basic_value_types ++ Enum.map(@basic_value_types, &{:array, &1})
 
-  def typeof([value | _tail]) when not is_list(value), do: {:array, typeof(value)}
+  @spec typeof(term()) :: {:ok, value_type()} | :error
+  def typeof(value) when is_binary(value), do: {:ok, :string}
+  def typeof(value) when is_number(value), do: {:ok, :number}
+  def typeof(value) when is_boolean(value), do: {:ok, :boolean}
+  def typeof(value) when is_struct(value, DateTime), do: {:ok, :datetime}
+
+  def typeof([value | _tail]) when not is_list(value) do
+    with({:ok, type} <- typeof(value)) do
+      {:ok, {:array, type}}
+    end
+  end
 
   def typeof([[value | _tail1] | _tail2]) when is_binary(value) do
-    {:array, {:array, :string}}
+    {:ok, {:array, {:array, :string}}}
   end
+
+  def typeof(_value), do: :error
 
   @spec expand_type([
           value_type() | {:_var, non_neg_integer()} | {:array, {:_var, non_neg_integer()}}
@@ -33,16 +42,17 @@ defmodule JetFilters.Type do
   defp do_expand_type(type, []), do: [type]
 
   defp do_expand_type(type, [var | vars]) do
-    types =
-      Enum.map(all_types(), fn t ->
-        Enum.map(type, fn
-          {:_var, ^var} -> t
-          {:array, {:_var, ^var}} -> {:array, t}
-          otherwise -> otherwise
-        end)
+    @value_types
+    |> Stream.map(fn t ->
+      List.foldr(type, [], fn
+        {:_var, ^var}, acc -> [t | acc]
+        {:array, {:_var, ^var}}, acc when t in @basic_value_types -> [{:array, t} | acc]
+        {:array, {:_var, ^var}}, acc -> acc
+        otherwise, acc -> [otherwise | acc]
       end)
-
-    Enum.flat_map(types, &do_expand_type(&1, vars))
+    end)
+    |> Stream.reject(&(&1 === []))
+    |> Enum.flat_map(&do_expand_type(&1, vars))
   end
 
   @spec expand_annotation(list()) :: {:ok, DateTime.t()} | :error
@@ -51,10 +61,5 @@ defmodule JetFilters.Type do
       {:ok, value, _offset} -> {:ok, value}
       _otherwise -> :error
     end
-  end
-
-  defp all_types do
-    types = [:string, :number, :boolean, :datetime, {:array, :string}]
-    types ++ Enum.map(types, &{:array, &1})
   end
 end
