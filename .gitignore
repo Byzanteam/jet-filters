@@ -27,3 +27,7 @@ jet_filters-*.tar
 
 /src/*_tokenizer.erl
 /src/*_parser.erl
+
+# dialyzer
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

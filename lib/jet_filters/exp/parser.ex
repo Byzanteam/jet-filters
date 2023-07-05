@@ -1,4 +1,4 @@
-defmodule JetFilter.Exp.Parser do
+defmodule JetFilters.Exp.Parser do
   @moduledoc false
 
   @type line() :: non_neg_integer()
@@ -9,7 +9,8 @@ defmodule JetFilter.Exp.Parser do
   @typep call_id() :: {:id, String.t()}
 
   @typep id() :: {:id, line(), String.t()}
-  @typep literal() :: nil | boolean() | number() | String.t() | [literal()]
+  @typep literal() :: nil | boolean() | number() | String.t() | annotation() | [literal()]
+  @typep annotation() :: {:"::", line(), list()}
 
   @spec parse(String.t()) ::
           {:ok, ast()} | {:error, term()} | {:error, error_info :: term(), line()}
