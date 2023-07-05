@@ -55,6 +55,7 @@ defmodule JetFilters.SQL do
     operands
     |> Enum.reduce_while({:ok, []}, fn
       {:id, _line, id}, {:ok, acc} ->
+        # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
         {:cont, {:ok, [String.to_atom(id) | acc]}}
 
       {:"::", _line, annotation}, {:ok, acc} ->

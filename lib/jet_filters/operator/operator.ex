@@ -84,10 +84,12 @@ defmodule JetFilters.Operator do
   defp do_build_empty_array_types([], _head), do: []
 
   defp do_build_empty_array_types([{:array, _type} = type | tail], heads) do
-    [heads ++ [:array] ++ tail | do_build_empty_array_types(tail, heads ++ [type])]
+    # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
+    [heads ++ [:array | tail] | do_build_empty_array_types(tail, heads ++ [type])]
   end
 
   defp do_build_empty_array_types([head | tail], heads) do
+    # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
     do_build_empty_array_types(tail, heads ++ [head])
   end
 
@@ -99,6 +101,7 @@ defmodule JetFilters.Operator do
 
   defmacro build_to_dynamic(operand_type, do: block) when 1 === length(operand_type) do
     quote location: :keep do
+      # credo:disable-for-next-line Credo.Check.Readability.Specs
       def to_dynamic([op], unquote(operand_type)) do
         var!(op) =
           if is_atom(op) do
@@ -114,6 +117,7 @@ defmodule JetFilters.Operator do
 
   defmacro build_to_dynamic(operand_type, do: block) when 2 === length(operand_type) do
     quote location: :keep do
+      # credo:disable-for-next-line Credo.Check.Readability.Specs
       def to_dynamic([op1, op2], unquote(operand_type)) do
         var!(op1) =
           if is_atom(op1) do

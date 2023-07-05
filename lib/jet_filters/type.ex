@@ -7,6 +7,7 @@ defmodule JetFilters.Type do
   @basic_value_types [:string, :number, :boolean, :datetime, {:array, :string}]
   @value_types @basic_value_types ++ Enum.map(@basic_value_types, &{:array, &1})
 
+  # credo:disable-for-next-line JetCredo.Checks.ExplicitAnyType
   @spec typeof(term()) :: {:ok, value_type()} | :error
   def typeof(value) when is_binary(value), do: {:ok, :string}
   def typeof(value) when is_number(value), do: {:ok, :number}
