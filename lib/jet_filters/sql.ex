@@ -3,10 +3,11 @@ defmodule JetFilters.SQL do
 
   import Ecto.Query
 
+  # credo:disable-for-next-line Credo.Check.Warning.SpecWithStruct
   @spec to_dynamic(
           JetFilters.Exp.Parser.ast(),
           field_types :: %{(field :: atom()) => JetFilters.Type.value_type()}
-        ) :: {:ok, Ecto.Query.dynamic_expr()} | :error
+        ) :: {:ok, %Ecto.Query.DynamicExpr{}} | :error
   def to_dynamic(ast, field_types) do
     do_to_dynamic(ast, field_types)
   end
