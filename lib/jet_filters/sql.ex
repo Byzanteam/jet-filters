@@ -5,7 +5,7 @@ defmodule JetFilters.SQL do
 
   @spec to_dynamic(
           JetFilters.Exp.Parser.ast(),
-          field_types :: %{(field :: String.t()) => JetFilters.Type.value_type()}
+          field_types :: %{(field :: atom()) => JetFilters.Type.value_type()}
         ) :: {:ok, Ecto.Query.dynamic_expr()} | :error
   def to_dynamic(ast, field_types) do
     do_to_dynamic(ast, field_types)
